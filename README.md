@@ -1,1 +1,3 @@
-# developing_with_elixir
+# Developing with Elixir
+
+https://online.pragmaticstudio.com/courses/elixir/steps/1
