@@ -8,16 +8,33 @@ defmodule Servy.Handler do
   import Servy.Parser, only: [parse: 1]
   alias Servy.Conv
   alias Servy.BearController
+  alias Servy.VideoCam
 
   @doc "Transforms the request into a response."
   def handle(request) do
     request
     |> parse
     |> rewrite_path
-    # |> log
+    |> log
     |> route
     |> track
     |> format_response
+  end
+
+  def route(%Conv{ method: "GET", path: "/snapshots" } = conv) do
+    parent = self() # the request-handling process
+
+    spawn(fn -> send(parent, {:result, VideoCam.get_snapshot("cam-1")}) end)
+    spawn(fn -> send(parent, {:result, VideoCam.get_snapshot("cam-2")}) end)
+    spawn(fn -> send(parent, {:result, VideoCam.get_snapshot("cam-3")}) end)
+
+    snapshot1 = receive do {:result, filename} -> filename end
+    snapshot2 = receive do {:result, filename} -> filename end
+    snapshot3 = receive do {:result, filename} -> filename end
+
+    snapshots = [snapshot1, snapshot2, snapshot3]
+
+    %{ conv | status: 200, resp_body: inspect snapshots}
   end
 
   def route(%Conv{ method: "GET", path: "/kaboom" } = conv) do
