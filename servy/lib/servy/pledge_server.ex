@@ -7,6 +7,8 @@ defmodule Servy.GenericServer do
 
   def call(pid, message) do
     send pid, {:call, self(), message}
+
+    receive do {:response, response} -> response end
   end
 
   def cast(pid, message) do
